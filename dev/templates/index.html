@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        body {
+            min-height: 100vh;
+            background-color: #e8e8e8;
+        }
+        
+         .center-cell {
+           text-align: left;
+              }
+        
+        .container {
+            padding-top: 50px;
+            padding-bottom: 50px;
+        }
+
+        #page-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            display: block;
+            margin: auto;
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #resultContainer {
+            margin-top: 20px;
+        }
+        .margin-auto {
+			margin: auto;
+			display: block;
+		}
+		.btn-search {
+			margin-bottom: 50px;
+		}
+    </style>
+    <title>Blockchain Explorer</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <h1 id="page-title">Block Explorer</h1>
+            </div>
+        </div>
+        <div class="form-group">
+        <label for="hashInput">Enter Hash:</label>
+        <input type="text" id="hashInput" class="form-control" placeholder="Enter hash value">
+        </div>
+<div class="form-group">
+        <label for="selectMenu">Select Type:</label>
+        <select id="selectMenu" class="form-control">
+            <option value="block">Block</option>
+            <option value="transaction">Transaction ID</option>
+            <option value="address">Address</option>
+        </select>
+</div>
+        <button onclick="submitRequest()" class="btn btn-primary margin-auto btn-search">Submit</button>
+
+        <div id="resultContainer"></div>
+    </div>
+
+    <script>
+
+
+var protocol = window.location.protocol;
+var host = window.location.host;
+console.log(protocol)
+console.log(host)
+function submitRequest() {
+  const hashInput = document.getElementById('hashInput').value;
+  const selectMenu = document.getElementById('selectMenu');
+  const selectedOption = selectMenu.options[selectMenu.selectedIndex].value;
+
+  const endpoint = `${protocol}//${host}/get${selectedOption}/${hashInput}`;
+   
+  fetch(endpoint)
+    .then(response => response.json())
+    .then(data => displayResult(data))
+    .catch(error => console.error('Error:', error));
+}
+
+function displayResult(data) {
+  const resultContainer = document.getElementById('resultContainer');
+  resultContainer.innerHTML = '';
+
+  const dataContainer = document.createElement('div');
+  dataContainer.classList.add('data-container');
+
+  for (const key in data) {
+    if (Array.isArray(data[key]) && data[key].length > 0) {
+      const table = document.createElement('table');
+      table.classList.add('table', 'table-striped');
+
+      const tableHead = document.createElement('thead');
+      const tableBody = document.createElement('tbody');
+
+      const headerRow = tableHead.insertRow();
+      for (const transactionKey in data[key][0]) {
+        const headerCell = document.createElement('th');
+        headerCell.textContent = transactionKey.charAt(0).toUpperCase() + transactionKey.slice(1);
+        headerRow.appendChild(headerCell);
+      }
+
+      for (const transactionData of data[key]) {
+        const row = tableBody.insertRow();
+        for (const transactionKey in transactionData) {
+          const cell = row.insertCell();
+          cell.textContent = transactionData[transactionKey];
+        }
+      }
+
+      table.appendChild(tableHead);
+      table.appendChild(tableBody);
+
+      dataContainer.appendChild(table);
+    } else {
+      const table = document.createElement('table');
+      table.classList.add('table', 'table-striped');
+
+      const tableBody = document.createElement('tbody');
+      const row = tableBody.insertRow();
+      const cell1 = row.insertCell(0);
+      const cell2 = row.insertCell(1);
+
+      
+      cell1.innerHTML = `<b>${key.charAt(0).toUpperCase() + key.slice(1)}</b>`;
+      
+      
+      cell2.textContent = data[key];
+
+      table.appendChild(tableBody);
+      dataContainer.appendChild(table);
+    }
+  }
+
+  resultContainer.appendChild(dataContainer);
+}
+
+
+    </script>
+</body>
+
+</html>
+
